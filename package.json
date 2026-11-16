@@ -1,6 +1,6 @@
 {
   "name": "@chenwei116057/dsh-win-bash",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "GNU bash (Git Bash) tool for DeepSeek Harness on Windows, for danger-full-access sessions.",
   "keywords": [
     "dsh",

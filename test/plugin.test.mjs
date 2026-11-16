@@ -354,3 +354,12 @@ test('an unusable bashPath publishes why bash is missing instead of staying sile
   assert.match(seen.sections[0].text, /not an existing file/)
   assert.match(seen.sections[0].text, /pwsh/)
 })
+
+test('the bundle patch imports the package by its published name', () => {
+  const pkg = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
+  const patch = fs.readFileSync(new URL('../cordis.patch.yml', import.meta.url), 'utf8')
+  const declared = patch.match(/^\s*name:\s*"?([^"\s]+)"?\s*$/m)
+
+  assert.ok(declared, 'cordis.patch.yml must declare the entry name')
+  assert.equal(declared[1], pkg.name)
+})

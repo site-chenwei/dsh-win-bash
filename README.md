@@ -32,7 +32,7 @@ DSH 自带的 `bash` 执行器只支持 POSIX（`@deepseek-ai/dsh-bash-local` �
    dsh plugin --profile desktop add link:D:\path\to\dsh-win-bash
    ```
 
-装完在 Plugins 里应该看到 `dsh-win-bash`，日志里有一行：
+装完在 Plugins 里应该看到 `@chenwei116057/dsh-win-bash`（本地目录安装则显示目录名），日志里有一行：
 
 ```
 dsh-win-bash: registered "bash" -> C:\Program Files\Git\bin\bash.exe (well-known).

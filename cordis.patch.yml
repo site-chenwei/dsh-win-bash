@@ -2,7 +2,7 @@
 # `name` must equal the package name — the loader imports this specifier.
 - insert:
     - id: win-bash
-      name: dsh-win-bash
+      name: "@chenwei116057/dsh-win-bash"
       config:
         timeoutMs: 120000
         # bashPath: D:\\tools\\Git\\bin\\bash.exe
