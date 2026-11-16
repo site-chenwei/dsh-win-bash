@@ -263,7 +263,7 @@ test('the terminal card carries the command, its description and the exit status
 
 test('the definition exposes one model-facing text block', () => {
   const tool = createDefinition(stubContext('danger-full-access'), BASH, SETTINGS)
-  assert.equal(tool.name, 'bash')
+  assert.equal(tool.name, 'win_bash')
   assert.equal(typeof tool.parameters.properties.command, 'object')
   const blocks = tool.output.render({}, {
     status: 'completed',
@@ -333,7 +333,7 @@ test('apply registers the tool and publishes the guidance section', async () => 
   await onFakeWindows(() => apply(ctx, { bashPath: 'C:\\Program Files\\Git\\bin\\bash.exe' }), true)
 
   assert.equal(seen.registrations.length, 1)
-  assert.equal(seen.registrations[0].name, 'bash')
+  assert.equal(seen.registrations[0].name, 'win_bash')
   assert.equal(typeof seen.registrations[0].presentCall, 'function')
   assert.equal(typeof seen.registrations[0].output.presentationMeta, 'function')
   assert.equal(seen.sections.length, 1)
@@ -362,4 +362,33 @@ test('the bundle patch imports the package by its published name', () => {
 
   assert.ok(declared, 'cordis.patch.yml must declare the entry name')
   assert.equal(declared[1], pkg.name)
+})
+
+test('a taken win_bash name falls back to bash and the guidance follows it', async () => {
+  const seen = { registrations: [], sections: [] }
+  const ctx = {
+    logger: { info() {}, warn() {} },
+    get: () => undefined,
+    effect(factory) { factory() },
+    tools: {
+      register(definition) {
+        if (definition.name === 'win_bash') throw new Error('tool "win_bash" is already registered')
+        seen.registrations.push(definition)
+        return () => {}
+      },
+    },
+    systemPrompt: {
+      getSectionOrder: () => 1000,
+      section(section) {
+        seen.sections.push(section)
+        return () => {}
+      },
+    },
+  }
+
+  await onFakeWindows(() => apply(ctx, { bashPath: 'C:\\Program Files\\Git\\bin\\bash.exe' }), true)
+
+  assert.equal(seen.registrations.length, 1)
+  assert.equal(seen.registrations[0].name, 'bash')
+  assert.match(seen.sections[0].text, /`bash` runs GNU bash/)
 })

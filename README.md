@@ -38,7 +38,7 @@ DSH 自带的 `bash` 执行器只支持 POSIX（`@deepseek-ai/dsh-bash-local` �
 dsh-win-bash: registered "bash" -> C:\Program Files\Git\bin\bash.exe (well-known).
 ```
 
-如果注册名 `bash` 已被占用，会退到 `win_bash` 并在日志里说明。
+工具名固定为 `win_bash`，不会去抢宿主自己的 `bash`；只有 `win_bash` 已被别的插件占用时才退回 `bash`，并在日志里说明。
 
 ## 配置
 

@@ -26,8 +26,12 @@ import path from 'node:path'
 export const name = 'dsh-win-bash'
 export const inject = ['tools', 'subprocess', 'systemPrompt']
 
-const TOOL_NAME = 'bash'
-const FALLBACK_TOOL_NAME = 'win_bash'
+/**
+ * Registered tool name. `win_bash` first so this tool never shadows the host's own
+ * `bash`; `bash` stays as the last resort when `win_bash` is taken by another plugin.
+ */
+const TOOL_NAME = 'win_bash'
+const FALLBACK_TOOL_NAME = 'bash'
 const DEFAULT_TIMEOUT_MS = 120_000
 const MAX_TIMEOUT_MS = 600_000
 const GRACE_MS = 3_000
@@ -52,7 +56,7 @@ const DESCRIPTION = [
   'Each call is a fresh shell; pass workdir instead of cd. Relative workdir resolves against the session workspace; workdir accepts D:/repo or /d/repo. Inside the command use MSYS paths such as /d/repo, and quote paths that contain spaces.',
   'For a script longer than a screen, or one containing heredocs, backslashes, nested quotes or non-ASCII text, write the file first and pass script_path instead of inlining it in command.',
   'Foreground only: there is no run_in_background and no job id, so a server or watcher holds the call until timeoutMs.',
-  'Use bash for POSIX work: pipelines, grep/sed/awk/find, shell scripts, git, make. Use pwsh for Windows-native objects: registry, services, scheduled tasks, WMI/CIM, .NET APIs.',
+  'Use this tool for POSIX work: pipelines, grep/sed/awk/find, shell scripts, git, make. Use pwsh for Windows-native objects: registry, services, scheduled tasks, WMI/CIM, .NET APIs.',
   'Long output is truncated to its tail; the full stream is saved to a spill file whose path is reported when available. stdout and stderr text may be partial: check the truncation note before parsing them as complete, and treat the spill path as convenience, not as proof the stream was captured.',
   'Exit status is reported as [exit code: N]; a non-zero code is a command result, not a tool failure. Verify resolved absolute targets before delete or move.',
   'Runs only in danger-full-access sessions; other sessions get a refusal instead of an unconfined command.',
