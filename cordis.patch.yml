@@ -1,0 +1,9 @@
+# dsh-win-bash bundle patch: inserts the Windows bash tool into the host roster.
+# `name` must equal the package name — the loader imports this specifier.
+- insert:
+    - id: win-bash
+      name: dsh-win-bash
+      config:
+        timeoutMs: 120000
+        # bashPath: D:\\tools\\Git\\bin\\bash.exe
+        # extraGuidance: ""

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="Windows bash">
+  <rect width="48" height="48" rx="11" fill="#0f172a"/>
+  <path d="M13 15.5l7.5 8.5-7.5 8.5" fill="none" stroke="#4ade80" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M25 32.5h11" stroke="#e2e8f0" stroke-width="3.4" stroke-linecap="round"/>
+</svg>

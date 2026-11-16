@@ -1,0 +1,48 @@
+{
+  "name": "@chenwei116057/dsh-win-bash",
+  "version": "0.2.0",
+  "description": "GNU bash (Git Bash) tool for DeepSeek Harness on Windows, for danger-full-access sessions.",
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "dsh-plugin",
+    "bash",
+    "git-bash",
+    "msys2",
+    "windows"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/site-chenwei/dsh-win-bash.git"
+  },
+  "homepage": "https://github.com/site-chenwei/dsh-win-bash#readme",
+  "bugs": {
+    "url": "https://github.com/site-chenwei/dsh-win-bash/issues"
+  },
+  "icon": "icon.svg",
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./icon.svg": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "cordis.patch.yml",
+    "icon.svg",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "MIT",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}
