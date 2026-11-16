@@ -16,6 +16,10 @@ Status: implemented
 
 插件管理页的「配置 X」按钮不是由 `Config` schema 生成的，而是由客户端槽位 `plugins.row.config` 驱动的：该槽位是 `keyed`、键为 `<包名>#<row id>`，需要某个**客户端插件**注册对应键，页面才显示按钮（`dsh-client-ui-plugin-manager/src/client/slot-contract.ts:160-167`、`src/client/config-ledger.ts:40-67` 里 `configure().has(row)` 查的就是这个 ledger）。服务端的 `Config` 只参与两件事：`cordis/src/fiber.ts:51-53` 的 `runtime.Config['~standard'].validate(config)` 校验，以及 `cordis-plugin-loader/src/index.ts:114-118` 用 `[simplify]` 把运行值写回 YAML。本包只有服务端入口，没有客户端 bundle，所以那一行按钮不会出现——把 `Config` 导出来也不会出现。
 
+## 配置校验
+
+插件导出 `Config`（标准 schema，`~standard.validate` 返回 `{ value }` 或 `{ issues }`），由 cordis 的 `resolveConfig` 在 `apply()` 之前调用（`cordis/src/fiber.ts:50-62`）：未知键（`bashpath`）、类型不对（`timeoutMs: "120000"`）会让该条目不激活并抛出 `ValidationError`，不再静默回落到自动探测。只校验类型——`bashPath` 是否真实存在、`timeoutMs` 是否超上限仍留给运行期，因为那需要文件系统和已有的告警路径。已对本机 0.2.2-rc.3 的 `@deepseek-ai/cordis` 实测：合法配置返回原值，拼错的键与字符串超时都抛 `ValidationError`，消息带键名与路径。
+
 ## Alternatives considered
 
 - **导出 `Config` 让页面自动出表单**：不成立。表单不由 schema 生成，理由同上条；导出 `Config` 只能拿到校验与默认值。

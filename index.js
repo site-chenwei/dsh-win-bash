@@ -50,6 +50,48 @@ const SHELL_ENV = Object.freeze({
   LC_MESSAGES: 'C',
 })
 
+/** Row-config keys this plugin accepts. A misspelled key is an error, not a no-op. */
+const SETTING_KEYS = ['bashPath', 'timeoutMs', 'extraGuidance']
+
+/**
+ * Row-config schema. Cordis validates it before `apply()` runs, so a wrong type or a
+ * misspelled key fails the load instead of silently reverting to auto-detection.
+ * Only shapes are checked here: range clamping and path resolution belong to
+ * `normalizeSettings` and `resolveBash`, which see the filesystem.
+ */
+export const Config = {
+  '~standard': {
+    version: 1,
+    vendor: 'dsh-win-bash',
+    /**
+     * @param value - raw row config from the profile patch.
+     * @returns `{ value }` when valid, `{ issues }` otherwise.
+     */
+    validate(value) {
+      if (value === undefined || value === null) return { value: {} }
+      if (typeof value !== 'object' || Array.isArray(value)) {
+        return { issues: [{ message: 'config must be an object.' }] }
+      }
+      const raw = /** @type {Record<string, unknown>} */ (value)
+      const issues = []
+      for (const key of Object.keys(raw)) {
+        if (SETTING_KEYS.includes(key)) continue
+        issues.push({ message: `unknown config key "${key}"; accepted keys are ${SETTING_KEYS.join(', ')}.`, path: [key] })
+      }
+      if (raw.bashPath !== undefined && typeof raw.bashPath !== 'string') {
+        issues.push({ message: 'bashPath must be a string.', path: ['bashPath'] })
+      }
+      if (raw.timeoutMs !== undefined && (typeof raw.timeoutMs !== 'number' || !Number.isFinite(raw.timeoutMs))) {
+        issues.push({ message: 'timeoutMs must be a finite number.', path: ['timeoutMs'] })
+      }
+      if (raw.extraGuidance !== undefined && typeof raw.extraGuidance !== 'string') {
+        issues.push({ message: 'extraGuidance must be a string.', path: ['extraGuidance'] })
+      }
+      return issues.length > 0 ? { issues } : { value: raw }
+    },
+  },
+}
+
 const DESCRIPTION = [
   'Run a command in GNU bash (Git Bash / MSYS2) on Windows and return its stdout/stderr.',
   'This is not PowerShell: use bash quoting, $VAR, $(command), pipes and redirects.',

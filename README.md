@@ -35,20 +35,32 @@ DSH 自带的 `bash` 执行器只支持 POSIX（`@deepseek-ai/dsh-bash-local` �
 装完在 Plugins 里应该看到 `@chenwei116057/dsh-win-bash`（本地目录安装则显示目录名），日志里有一行：
 
 ```
-dsh-win-bash: registered "bash" -> C:\Program Files\Git\bin\bash.exe (well-known).
+dsh-win-bash: registered "win_bash" -> C:\Program Files\Git\bin\bash.exe (well-known).
 ```
 
 工具名固定为 `win_bash`，不会去抢宿主自己的 `bash`；只有 `win_bash` 已被别的插件占用时才退回 `bash`，并在日志里说明。
 
 ## 配置
 
-行配置在 `cordis.patch.yml` 里，也可以在 Plugins 的配置面板改：
+配置只写在 profile 的 `cordis.patch.yml` 里（`%USERPROFILE%\.dsh\profiles\desktop\cordis.patch.yml`）——插件管理页不会出现「配置」按钮：那个按钮由客户端槽位 `plugins.row.config` 驱动，需要客户端 UI 插件注册对应键，本包只有服务端入口。手改下面这一条即可，`id` 保持 `win-bash`、**不要带 `name`**（带了就变成新增条目而不是覆盖）：
 
-| 字段 | 默认 | 说明 |
-| --- | --- | --- |
-| `bashPath` | 空 | 显式指定 `bash.exe`。**配了就只认它**，路径不存在会直接不注册并打日志，不会偷偷换成别的安装。`C:\Windows\System32\bash.exe`（WSL 启动桩）会被明确拒绝。 |
-| `timeoutMs` | `120000` | 默认超时，上限 `600000`。单次调用可以用参数覆盖。 |
-| `extraGuidance` | 空 | 追加到系统提示词的额外路由说明，比如团队自己的构建约定。 |
+```yaml
+- id: win-bash
+  config:
+    bashPath: 'C:\Program Files\Git\bin\bash.exe'
+    timeoutMs: 120000
+    extraGuidance: ''
+```
+
+| 字段 | 类型 | 默认 | 说明 |
+| --- | --- | --- | --- |
+| `bashPath` | string | 空 | 显式指定 `bash.exe`。**配了就只认它**，路径不存在会直接不注册并打日志，不会偷偷换成别的安装。`C:\Windows\System32\bash.exe`（WSL 启动桩）会被明确拒绝。 |
+| `timeoutMs` | number | `120000` | 默认超时，超过 `600000` 会被裁剪到上限。单次调用可以用参数覆盖。 |
+| `extraGuidance` | string | 空 | 追加到系统提示词的额外路由说明，比如团队自己的构建约定。 |
+
+**写错会怎样**：插件的 `Config` schema 在加载前校验，未知键（`bashpath`）、类型不对（`timeoutMs: "120000"`）都会让该条目不激活，日志里是 `invalid config: … unknown config key "bashpath"; accepted keys are bashPath, timeoutMs, extraGuidance.`。schema 只管类型；`bashPath` 是否真实存在、`timeoutMs` 的上限裁剪放在运行期，前者不注册并发布 `bash is unavailable` 段落，后者打一行 warn 说明被裁到多少。
+
+配完重启 DSH（或让 Loader 重载该条目），日志里出现 `registered "win_bash" -> <路径> (config)` 才算配置生效——尾部的 `(config)` 表示用的是你配的路径，`(well-known)` / `(PATH)` 表示还在自动探测。
 
 不配 `bashPath` 时按顺序探测：`%ProgramFiles%\Git\bin\bash.exe`、`%ProgramFiles%\Git\usr\bin\bash.exe`、`%ProgramFiles(x86)%`、`%LOCALAPPDATA%\Programs\Git`、scoop、chocolatey、`C:\msys64` 等，最后扫 `PATH`。
 
@@ -77,9 +89,10 @@ dsh-win-bash: registered "bash" -> C:\Program Files\Git\bin\bash.exe (well-known
 4. `command: 'sleep 5'`, `timeoutMs: 1000` → 1 秒左右结束，带 `[timed out after 1000ms]`。
 5. 中文输出：`echo 中文` 不乱码；`printf` 混合 stderr 时两段分开。
 6. 切到工作区写入（workspace-write）会话再调 → 返回 `runs only in danger-full-access`，命令没有执行。
-7. Plugins 里把 `bashPath` 改成一个不存在的路径并重载 → 插件不注册，日志指出路径，系统提示词里出现 `bash is unavailable` 一节。
+7. 在 `cordis.patch.yml` 里把 `bashPath` 改成一个不存在的路径并重载 → 插件不注册，日志指出路径，系统提示词里出现 `bash is unavailable` 一节。
 8. `command: 'echo hi'` 同时带 `run_in_background: true` → 返回 `[INVALID_ARGUMENT; effects: none; retry: after-input-change] unknown argument: run_in_background…`，命令没有执行。
 9. 终端卡片：这次调用显示为 terminal 卡，标题是命令首行；完成后 exit code 胶囊显示真实退出码（`status: failed` 但 exit code 2 时显示 2）。
+10. 把配置键名故意写成 `bashpath` 并重载 → 条目不激活，日志给出 `invalid config: … unknown config key "bashpath"; accepted keys are bashPath, timeoutMs, extraGuidance.`
 
 ## 未验证 / 已知限制
 

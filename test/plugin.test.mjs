@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import test from 'node:test'
 
 import {
+  Config,
   apply,
   createDefinition,
   isWslBashLauncher,
@@ -391,4 +392,15 @@ test('a taken win_bash name falls back to bash and the guidance follows it', asy
   assert.equal(seen.registrations.length, 1)
   assert.equal(seen.registrations[0].name, 'bash')
   assert.match(seen.sections[0].text, /`bash` runs GNU bash/)
+})
+
+test('the config schema accepts the documented shape and names typos', () => {
+  const validate = Config['~standard'].validate
+
+  assert.equal(validate({}).value.timeoutMs, undefined)
+  assert.equal(validate({ timeoutMs: 120_000, bashPath: 'C:\\Git\\bin\\bash.exe' }).value.timeoutMs, 120_000)
+  assert.match(validate({ bashpath: 'C:\\Git\\bin\\bash.exe' }).issues[0].message, /unknown config key "bashpath"/)
+  assert.match(validate({ timeoutMs: '120000' }).issues[0].message, /must be a finite number/)
+  assert.match(validate({ extraGuidance: 5 }).issues[0].message, /must be a string/)
+  assert.match(validate('nope').issues[0].message, /config must be an object/)
 })
